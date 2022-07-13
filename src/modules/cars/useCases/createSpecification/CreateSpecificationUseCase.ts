@@ -1,22 +1,30 @@
-import { SpecificationRepository } from '../../repositories/implementations/SpecificationRepositoty';
+import { SpecificationRepository } from '@modules/cars/infra/repositories/SpecificationRepositoty';
+import { inject, injectable } from 'tsyringe';
+
+import { AppError } from '@shared/errors/AppError';
 
 interface IRequest {
   name: string;
   description: string;
 }
-class CreateSpecificationUseCase {
-  constructor(private specificationsRepository: SpecificationRepository) {}
 
-  execute({ name, description }: IRequest): void {
+@injectable()
+class CreateSpecificationUseCase {
+  constructor(
+    @inject('SpecificationRepository')
+    private specificationsRepository: SpecificationRepository
+  ) {}
+
+  async execute({ name, description }: IRequest): Promise<void> {
     console.log({ name, description });
     const specificationAlreadExists =
-      this.specificationsRepository.findByName(name);
+      await this.specificationsRepository.findByName(name);
 
     if (specificationAlreadExists) {
-      throw new Error('Specification alread exists!');
+      throw new AppError('Specification alread exists!');
     }
 
-    this.specificationsRepository.create({ name, description });
+    await this.specificationsRepository.create({ name, description });
   }
 }
 

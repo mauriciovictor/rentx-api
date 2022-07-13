@@ -1,18 +1,26 @@
-import { CategoryRepository } from '../../repositories/implementations/CategoryRepositories';
+import { ICategoryRepository } from '@modules/cars/repositories/ICategoriesRepositoty';
+import { inject, injectable } from 'tsyringe';
+
+import { AppError } from '@shared/errors/AppError';
 
 interface IRequest {
   name: string;
   description: string;
 }
 
+@injectable()
 class CreateCategoryUseCase {
-  constructor(private categoryReposijtory: CategoryRepository) {}
-
-  execute({ name, description }: IRequest): void {
-    const categoryAlreadExists = this.categoryReposijtory.findByName(name);
+  constructor(
+    @inject('CategoryRepository')
+    private categoryReposijtory: ICategoryRepository
+  ) {}
+  async execute({ name, description }: IRequest): Promise<void> {
+    const categoryAlreadExists = await this.categoryReposijtory.findByName(
+      name
+    );
 
     if (categoryAlreadExists) {
-      throw new Error('category alread exists!');
+      throw new AppError('category alread exists!');
     }
 
     this.categoryReposijtory.create({ name, description });
